@@ -6,10 +6,10 @@
 // @author             HCLonely
 // @license            MIT
 // @iconURL            https://auto-task-test.hclonely.com/img/favicon.ico
-// @homepage           https://auto-task-test.hclonely.com/img/favicon.ico
-// @supportURL         https://auto-task-test.hclonely.com/img/favicon.ico
-// @updateURL          https://auto-task-test.hclonely.com/img/favicon.ico
-// @downloadURL        https://auto-task-test.hclonely.com/img/favicon.ico
+// @homepage           https://github.com/HCLonely/steam-wishlist-reset
+// @supportURL         https://github.com/HCLonely/steam-wishlist-reset/issues
+// @updateURL          https://github.com/HCLonely/steam-wishlist-reset/raw/master/steam-wishlist-reset.user.js
+// @downloadURL        https://github.com/HCLonely/steam-wishlist-reset/raw/master/steam-wishlist-reset.user.js
 
 // @include            *://store.steampowered.com/wishlist/profiles/*
 
@@ -19,6 +19,7 @@
 // @grant              GM_setValue
 // @grant              GM_getValue
 // @grant              GM_deleteValue
+// @grant              GM_addStyle
 // @grant              GM_xmlhttpRequest
 // @grant              GM_registerMenuCommand
 
@@ -27,10 +28,11 @@
 
 (function () {
 
+  GM_addStyle('#swal2-title{color:#000!important;}')
   function clearWishlist() {
     Swal.fire({
-      title:'正在获取愿望单列表',
-      text:'请耐心等待...'
+      title: '正在获取愿望单列表',
+      text: '请耐心等待...'
     })
     GM_xmlhttpRequest({
       method: 'GET',
@@ -115,14 +117,15 @@
 
   async function recoverWishlist() {
     Swal.fire({
-      title:'正在读取愿望单列表',
-      text:'请稍等...'
+      title: '正在读取愿望单列表',
+      text: '请稍等...'
     })
     const list = GM_getValue('list')
-    const games = list ? list[list.length - 1] : null
+    const listId = list ? list[list.length - 1] : null
+    const games = listId ? GM_getValue(listId) : null
     if (games) {
       const failedGames = []
-      for (const gameId of response.response.rgWishlist) {
+      for (const gameId of games) {
         if (!(await addToWishlist(gameId))) failedGames.push(gameId)
       }
       console.log('恢复失败的游戏：', failedGames)
@@ -152,13 +155,13 @@
         responseType: 'json',
         onload: response => {
           console.log(response)
-          if (response.status === 200 && response.response?.success === true){
+          if (response.status === 200 && response.response?.success === true) {
             resolve(true)
-          }else{
+          } else {
             resolve(false)
           }
         },
-        ontimeout: ()=>{
+        ontimeout: () => {
           resolve(false)
         },
         onerror: () => {

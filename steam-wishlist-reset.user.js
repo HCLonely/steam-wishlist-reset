@@ -6,21 +6,24 @@
 // @author             HCLonely
 // @license            MIT
 // @iconURL            https://auto-task-test.hclonely.com/img/favicon.ico
-// @homepage           https://auto-task-test.hclonely.com/img/favicon.ico
-// @supportURL         https://auto-task-test.hclonely.com/img/favicon.ico
-// @updateURL          https://auto-task-test.hclonely.com/img/favicon.ico
-// @downloadURL        https://auto-task-test.hclonely.com/img/favicon.ico
+// @homepage           https://github.com/HCLonely/steam-wishlist-reset
+// @supportURL         https://github.com/HCLonely/steam-wishlist-reset/issues
+// @updateURL          https://github.com/HCLonely/steam-wishlist-reset/raw/master/steam-wishlist-reset.user.js
+// @downloadURL        https://github.com/HCLonely/steam-wishlist-reset/raw/master/steam-wishlist-reset.user.js
 // @include            *://store.steampowered.com/wishlist/profiles/*
 // @require            https://cdn.jsdelivr.net/npm/sweetalert2@10.10.2/dist/sweetalert2.all.min.js
 // @require            https://cdn.jsdelivr.net/npm/regenerator-runtime@0.13.5/runtime.min.js
 // @grant              GM_setValue
 // @grant              GM_getValue
 // @grant              GM_deleteValue
+// @grant              GM_addStyle
 // @grant              GM_xmlhttpRequest
 // @grant              GM_registerMenuCommand
 // @run-at             document-end
 // ==/UserScript==
 (function () {
+  GM_addStyle('#swal2-title{color:#000!important;}');
+
   function clearWishlist() {
     Swal.fire({
       title: '正在获取愿望单列表',
@@ -118,12 +121,13 @@
       text: '请稍等...'
     });
     const list = GM_getValue('list');
-    const games = list ? list[list.length - 1] : null;
+    const listId = list ? list[list.length - 1] : null;
+    const games = listId ? GM_getValue(listId) : null;
 
     if (games) {
       const failedGames = [];
 
-      for (const gameId of response.response.rgWishlist) {
+      for (const gameId of games) {
         if (!(await addToWishlist(gameId))) failedGames.push(gameId);
       }
 
