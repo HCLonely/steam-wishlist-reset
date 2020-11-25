@@ -1,0 +1,24 @@
+{
+  "name": "steam-whislists",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "babel": "./node_modules/.bin/babel index.user.js -o steam-wishlist-reset.user.js"
+  },
+  "author": "HCLonely",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/cli": "^7.12.8",
+    "@babel/core": "^7.12.9",
+    "@babel/plugin-transform-runtime": "^7.12.1",
+    "@babel/preset-env": "^7.12.7",
+    "standard": "^16.0.3"
+  },
+  "standard":{
+    "ignore":[
+      "steam-wishlist-reset.user.js"
+    ]
+  }
+}
