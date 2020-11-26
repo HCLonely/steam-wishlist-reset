@@ -10,49 +10,48 @@
 // @supportURL         https://github.com/HCLonely/steam-wishlist-reset/issues
 // @updateURL          https://github.com/HCLonely/steam-wishlist-reset/raw/master/steam-wishlist-reset.user.js
 // @downloadURL        https://github.com/HCLonely/steam-wishlist-reset/raw/master/steam-wishlist-reset.user.js
+
 // @include            *://store.steampowered.com/wishlist/profiles/*
+
 // @require            https://cdn.jsdelivr.net/npm/sweetalert2@10.10.2/dist/sweetalert2.all.min.js
 // @require            https://cdn.jsdelivr.net/npm/regenerator-runtime@0.13.5/runtime.min.js
+
 // @grant              GM_setValue
 // @grant              GM_getValue
 // @grant              GM_deleteValue
 // @grant              GM_addStyle
 // @grant              GM_xmlhttpRequest
 // @grant              GM_registerMenuCommand
+
 // @run-at             document-end
 // ==/UserScript==
 
 /* global GM_setValue,GM_getValue,GM_addStyle,GM_xmlhttpRequest,GM_registerMenuCommand,Swal,g_sessionID,g_AccountID,Blob,FileReader */
+
 (function () {
   GM_addStyle('#swal2-title{color:#000!important;}#swal2-content a{color:#2f89bc!important;}')
-
   async function clearWishlist () {
     Swal.fire({
       title: '正在获取愿望单列表',
       text: '请耐心等待...'
     })
     const wishlistGames = await getWishlistFromServer()
-
     if (wishlistGames?.length > 0) {
       const list = GM_setValue('list')?.length > 0 ? GM_setValue('list') : []
       const time = new Date().getTime()
       list.push(time)
       GM_setValue(time, wishlistGames)
       GM_setValue('list', list)
-
       for (const gameId of wishlistGames) {
         await removeFromWishlist(gameId)
       }
-
       Swal.fire({
         icon: 'success',
         title: '愿望单清空完成（忽略所有错误）',
         confirmButtonText: '保存愿望单数据到本地',
         showCancelButton: true,
         cancelButtonText: '关闭'
-      }).then(({
-        value
-      }) => {
+      }).then(({ value }) => {
         if (value) {
           createAndDownloadFile('wishlists.json', JSON.stringify(wishlistGames))
         }
@@ -74,9 +73,7 @@
       GM_xmlhttpRequest({
         url: 'https://store.steampowered.com/api/removefromwishlist',
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-        },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
         data: `sessionid=${g_sessionID}&appid=${gameId}`,
         responseType: 'json',
         onload: response => {
@@ -94,14 +91,11 @@
     if (!games) {
       games = await getWishlistFromLocal()
     }
-
     if (games) {
       const failedGames = []
-
       for (const gameId of games) {
         if (!(await addToWishlist(gameId))) failedGames.push(gameId)
       }
-
       console.log('恢复失败的游戏：', failedGames)
       Swal.fire({
         icon: 'success',
@@ -112,9 +106,7 @@
         confirmButtonText: '重新恢复失败的游戏',
         showCancelButton: true,
         cancelButtonText: '关闭'
-      }).then(({
-        value
-      }) => {
+      }).then(({ value }) => {
         if (value) {
           recoverWishlist(failedGames)
         }
@@ -126,7 +118,6 @@
       })
     }
   }
-
   function addToWishlist (gameId) {
     return new Promise(resolve => {
       Swal.update({
@@ -136,14 +127,11 @@
       GM_xmlhttpRequest({
         url: 'https://store.steampowered.com/api/addtowishlist',
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-        },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
         data: `sessionid=${g_sessionID}&appid=${gameId}`,
         responseType: 'json',
         onload: response => {
           console.log(response)
-
           if (response.status === 200 && response.response?.success === true) {
             resolve(true)
           } else {
@@ -162,7 +150,6 @@
       })
     })
   }
-
   function createAndDownloadFile (fileName, content) {
     const aTag = document.createElement('a')
     const blob = new Blob([content])
@@ -171,7 +158,6 @@
     aTag.click()
     URL.revokeObjectURL(blob)
   }
-
   function getWishlistFromServer () {
     return new Promise(resolve => {
       GM_xmlhttpRequest({
@@ -181,7 +167,6 @@
         responseType: 'json',
         onload: async response => {
           console.log(response)
-
           if (response.status === 200 && response?.response?.rgWishlist) {
             resolve(response.response.rgWishlist)
           } else {
@@ -219,7 +204,6 @@
       })
     })
   }
-
   async function getWishlistFromLocal () {
     let games
     const type = await Swal.fire({
@@ -233,7 +217,6 @@
         return 'file'
       }
     })
-
     if (type === 'cache') {
       Swal.fire({
         title: '正在读取愿望单列表',
@@ -243,9 +226,7 @@
       const listId = list ? list[list.length - 1] : null
       games = listId ? GM_getValue(listId) : null
     } else if (type === 'file') {
-      const {
-        value: file
-      } = await Swal.fire({
+      const { value: file } = await Swal.fire({
         title: '请选择要读取的文件',
         input: 'file',
         inputAttributes: {
@@ -261,23 +242,18 @@
         })
         games = await new Promise(resolve => {
           const reader = new FileReader()
-
           reader.onload = e => {
             resolve(JSON.parse(e.target.result))
           }
-
           reader.onerror = e => {
             resolve(false)
           }
-
           reader.readAsText(file)
         })
       }
     }
-
     return games
   }
-
   GM_registerMenuCommand('清空愿望单', clearWishlist)
   GM_registerMenuCommand('恢复愿望单', recoverWishlist)
 })()
