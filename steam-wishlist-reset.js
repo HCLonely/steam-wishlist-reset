@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name               Steam愿望单重置
 // @namespace          steam-wishlist-reset
-// @version            1.0.2
+// @version            1.0.4
 // @description        清空Steam愿望单 & 恢复Steam愿望单
 // @author             HCLonely
 // @license            MIT
@@ -26,7 +26,7 @@
 // @run-at             document-end
 // ==/UserScript==
 
-/* global GM_setValue,GM_getValue,GM_addStyle,GM_xmlhttpRequest,GM_registerMenuCommand,Swal,g_sessionID,g_AccountID,Blob,FileReader */
+/* global Swal,g_sessionID,g_AccountID,Blob,FileReader */
 
 (function () {
   GM_addStyle('#swal2-title{color:#000!important;}#swal2-content a{color:#2f89bc!important;}')
@@ -36,15 +36,17 @@
       title: '正在获取愿望单列表',
       text: '请耐心等待...'
     })
-    const wishlistGames = await getWishlistFromServer().splice(0, limit)
+    const wishlistGames = await getWishlistFromServer()
+    wishlistGames.splice(0, limit)
     if (wishlistGames?.length > 0) {
       const list = GM_setValue('list')?.length > 0 ? GM_setValue('list') : []
       const time = new Date().getTime()
       list.push(time)
       GM_setValue(time, wishlistGames)
       GM_setValue('list', list)
-      for (const gameId of wishlistGames) {
-        await removeFromWishlist(gameId)
+      const len = wishlistGames.length
+      for (let i = 0; i < len; i++) {
+        await removeFromWishlist(wishlistGames[i], i, len)
       }
       Swal.fire({
         icon: 'success',
@@ -65,11 +67,11 @@
     }
   }
 
-  function removeFromWishlist (gameId) {
+  function removeFromWishlist (gameId, i, len) {
     return new Promise(resolve => {
-      Swal.update({
+      Swal[i === 0 ? 'fire' : 'update']({
         title: '正在移除愿望单游戏',
-        text: gameId
+        text: gameId + ' (' + (i + 1) + '/' + len + ')'
       })
       GM_xmlhttpRequest({
         url: 'https://store.steampowered.com/api/removefromwishlist',
@@ -267,7 +269,7 @@
       title: '请输入要保留的游戏数量',
       input: 'text',
       inputLabel: '由于忽略了错误，实际保留的游戏数量可能比你设置的要多几个！',
-      inputValue: 0,
+      inputValue: GM_getValue('limit') || 0,
       showCancelButton: true,
       inputValidator: (value) => {
         if (!/^[\d]+$/.test(value)) {
@@ -276,6 +278,10 @@
       }
     }).then(({ value }) => {
       GM_setValue('limit', parseInt(value))
+      Swal.fire({
+        title: '保存成功',
+        icon: 'success'
+      })
     })
   }
   GM_registerMenuCommand('清空愿望单', clearWishlist)
