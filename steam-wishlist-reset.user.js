@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name               Steam愿望单重置
 // @namespace          steam-wishlist-reset
-// @version            1.0.1
+// @version            1.0.2
 // @description        清空Steam愿望单 & 恢复Steam愿望单
 // @author             HCLonely
 // @license            MIT
@@ -27,11 +27,12 @@
   GM_addStyle('#swal2-title{color:#000!important;}#swal2-content a{color:#2f89bc!important;}')
 
   async function clearWishlist () {
+    const limit = GM_getValue('limit') || 0
     Swal.fire({
       title: '正在获取愿望单列表',
       text: '请耐心等待...'
     })
-    const wishlistGames = await getWishlistFromServer()
+    const wishlistGames = await getWishlistFromServer().splice(0, limit)
 
     if (wishlistGames?.length > 0) {
       const list = GM_setValue('list')?.length > 0 ? GM_setValue('list') : []
@@ -92,14 +93,23 @@
 
   async function recoverWishlist (games) {
     if (!games) {
-      games = await getWishlistFromLocal()
+      const oldWishlist = await getWishlistFromLocal()
+      const newWishlist = await getWishlistFromServer()
+      games = oldWishlist.filter(item => !newWishlist.includes(item))
     }
 
     if (games) {
-      const failedGames = []
+      let failedGames = []
+      const len = games.length
 
-      for (const gameId of games) {
-        if (!(await addToWishlist(gameId))) failedGames.push(gameId)
+      for (let i = 0; i < len; i++) {
+        if (!(await addToWishlist(games[i], i, len))) failedGames.push(games[i])
+      }
+
+      const newWishlist = await getWishlistFromServer()
+
+      if (newWishlist) {
+        failedGames = games.filter(item => !newWishlist.includes(item))
       }
 
       console.log('恢复失败的游戏：', failedGames)
@@ -127,11 +137,11 @@
     }
   }
 
-  function addToWishlist (gameId) {
+  function addToWishlist (gameId, i, len) {
     return new Promise(resolve => {
-      Swal.update({
+      Swal[i === 0 ? 'fire' : 'update']({
         title: '正在恢复愿望单游戏',
-        text: gameId
+        text: gameId + ' (' + (i + 1) + '/' + len + ')'
       })
       GM_xmlhttpRequest({
         url: 'https://store.steampowered.com/api/addtowishlist',
@@ -278,6 +288,26 @@
     return games
   }
 
+  function setting () {
+    Swal.fire({
+      title: '请输入要保留的游戏数量',
+      input: 'text',
+      inputLabel: '由于忽略了错误，实际保留的游戏数量可能比你设置的要多几个！',
+      inputValue: 0,
+      showCancelButton: true,
+      inputValidator: value => {
+        if (!/^[\d]+$/.test(value)) {
+          return '请输入正确的数字！'
+        }
+      }
+    }).then(({
+      value
+    }) => {
+      GM_setValue('limit', parseInt(value))
+    })
+  }
+
   GM_registerMenuCommand('清空愿望单', clearWishlist)
   GM_registerMenuCommand('恢复愿望单', recoverWishlist)
+  GM_registerMenuCommand('保留的游戏数量', setting)
 })()
