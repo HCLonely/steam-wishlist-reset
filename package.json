@@ -21,6 +21,9 @@
   "standard":{
     "global":[
       "GM_setValue","GM_getValue","GM_addStyle","GM_xmlhttpRequest","GM_registerMenuCommand"
+    ],
+    "ignore":[
+      "steam-wishlist-reset.user.js"
     ]
   }
 }

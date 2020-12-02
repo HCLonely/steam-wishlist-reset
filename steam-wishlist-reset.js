@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name               Steam愿望单重置
 // @namespace          steam-wishlist-reset
-// @version            1.0.4
+// @version            1.0.5
 // @description        清空Steam愿望单 & 恢复Steam愿望单
 // @author             HCLonely
 // @license            MIT
@@ -277,11 +277,18 @@
         }
       }
     }).then(({ value }) => {
-      GM_setValue('limit', parseInt(value))
-      Swal.fire({
-        title: '保存成功',
-        icon: 'success'
-      })
+      if (/^[\d]+$/.test(value)) {
+        GM_setValue('limit', parseInt(value))
+        Swal.fire({
+          title: '保存成功',
+          icon: 'success'
+        })
+      } else if (value) {
+        Swal.fire({
+          title: '请输入正确的数字！',
+          icon: 'error'
+        })
+      }
     })
   }
   GM_registerMenuCommand('清空愿望单', clearWishlist)

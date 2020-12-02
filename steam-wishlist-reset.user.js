@@ -1,7 +1,13 @@
+"use strict";
+
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
+
+function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
+
 // ==UserScript==
 // @name               Steam愿望单重置
 // @namespace          steam-wishlist-reset
-// @version            1.0.4
+// @version            1.0.5
 // @description        清空Steam愿望单 & 恢复Steam愿望单
 // @author             HCLonely
 // @license            MIT
@@ -24,296 +30,479 @@
 
 /* global Swal,g_sessionID,g_AccountID,Blob,FileReader */
 (function () {
-  GM_addStyle('#swal2-title{color:#000!important;}#swal2-content a{color:#2f89bc!important;}')
+  GM_addStyle('#swal2-title{color:#000!important;}#swal2-content a{color:#2f89bc!important;}');
 
-  async function clearWishlist () {
-    const limit = GM_getValue('limit') || 0
-    Swal.fire({
-      title: '正在获取愿望单列表',
-      text: '请耐心等待...'
-    })
-    const wishlistGames = await getWishlistFromServer()
-    wishlistGames.splice(0, limit)
-
-    if (wishlistGames?.length > 0) {
-      const list = GM_setValue('list')?.length > 0 ? GM_setValue('list') : []
-      const time = new Date().getTime()
-      list.push(time)
-      GM_setValue(time, wishlistGames)
-      GM_setValue('list', list)
-      const len = wishlistGames.length
-
-      for (let i = 0; i < len; i++) {
-        await removeFromWishlist(wishlistGames[i], i, len)
-      }
-
-      Swal.fire({
-        icon: 'success',
-        title: '愿望单清空完成（忽略所有错误）',
-        confirmButtonText: '保存愿望单数据到本地',
-        showCancelButton: true,
-        cancelButtonText: '关闭'
-      }).then(({
-        value
-      }) => {
-        if (value) {
-          createAndDownloadFile('wishlists.json', JSON.stringify(wishlistGames))
-        }
-      })
-    } else {
-      Swal.fire({
-        icon: 'warning',
-        title: '愿望单为空！'
-      })
-    }
+  function clearWishlist() {
+    return _clearWishlist.apply(this, arguments);
   }
 
-  function removeFromWishlist (gameId, i, len) {
-    return new Promise(resolve => {
+  function _clearWishlist() {
+    _clearWishlist = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
+      var limit, wishlistGames, _GM_setValue, list, time, len, i;
+
+      return regeneratorRuntime.wrap(function _callee2$(_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              limit = GM_getValue('limit') || 0;
+              Swal.fire({
+                title: '正在获取愿望单列表',
+                text: '请耐心等待...'
+              });
+              _context2.next = 4;
+              return getWishlistFromServer();
+
+            case 4:
+              wishlistGames = _context2.sent;
+              wishlistGames.splice(0, limit);
+
+              if (!((wishlistGames === null || wishlistGames === void 0 ? void 0 : wishlistGames.length) > 0)) {
+                _context2.next = 23;
+                break;
+              }
+
+              list = ((_GM_setValue = GM_setValue('list')) === null || _GM_setValue === void 0 ? void 0 : _GM_setValue.length) > 0 ? GM_setValue('list') : [];
+              time = new Date().getTime();
+              list.push(time);
+              GM_setValue(time, wishlistGames);
+              GM_setValue('list', list);
+              len = wishlistGames.length;
+              i = 0;
+
+            case 14:
+              if (!(i < len)) {
+                _context2.next = 20;
+                break;
+              }
+
+              _context2.next = 17;
+              return removeFromWishlist(wishlistGames[i], i, len);
+
+            case 17:
+              i++;
+              _context2.next = 14;
+              break;
+
+            case 20:
+              Swal.fire({
+                icon: 'success',
+                title: '愿望单清空完成（忽略所有错误）',
+                confirmButtonText: '保存愿望单数据到本地',
+                showCancelButton: true,
+                cancelButtonText: '关闭'
+              }).then(function (_ref2) {
+                var value = _ref2.value;
+
+                if (value) {
+                  createAndDownloadFile('wishlists.json', JSON.stringify(wishlistGames));
+                }
+              });
+              _context2.next = 24;
+              break;
+
+            case 23:
+              Swal.fire({
+                icon: 'warning',
+                title: '愿望单为空！'
+              });
+
+            case 24:
+            case "end":
+              return _context2.stop();
+          }
+        }
+      }, _callee2);
+    }));
+    return _clearWishlist.apply(this, arguments);
+  }
+
+  function removeFromWishlist(gameId, i, len) {
+    return new Promise(function (resolve) {
       Swal[i === 0 ? 'fire' : 'update']({
         title: '正在移除愿望单游戏',
         text: gameId + ' (' + (i + 1) + '/' + len + ')'
-      })
+      });
       GM_xmlhttpRequest({
         url: 'https://store.steampowered.com/api/removefromwishlist',
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
         },
-        data: `sessionid=${g_sessionID}&appid=${gameId}`,
+        data: "sessionid=".concat(g_sessionID, "&appid=").concat(gameId),
         responseType: 'json',
-        onload: response => {
-          console.log(response)
-          resolve()
+        onload: function onload(response) {
+          console.log(response);
+          resolve();
         },
         ontimeout: resolve,
         onerror: resolve,
         onabort: resolve
-      })
-    })
+      });
+    });
   }
 
-  async function recoverWishlist (games) {
-    if (!games) {
-      const oldWishlist = await getWishlistFromLocal()
-      const newWishlist = await getWishlistFromServer()
-      games = oldWishlist.filter(item => !newWishlist.includes(item))
-    }
+  function recoverWishlist(_x) {
+    return _recoverWishlist.apply(this, arguments);
+  }
 
-    if (games) {
-      let failedGames = []
-      const len = games.length
+  function _recoverWishlist() {
+    _recoverWishlist = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(games) {
+      var oldWishlist, newWishlist, failedGames, len, i, _newWishlist;
 
-      for (let i = 0; i < len; i++) {
-        if (!(await addToWishlist(games[i], i, len))) failedGames.push(games[i])
-      }
+      return regeneratorRuntime.wrap(function _callee3$(_context3) {
+        while (1) {
+          switch (_context3.prev = _context3.next) {
+            case 0:
+              if (games) {
+                _context3.next = 8;
+                break;
+              }
 
-      const newWishlist = await getWishlistFromServer()
+              _context3.next = 3;
+              return getWishlistFromLocal();
 
-      if (newWishlist) {
-        failedGames = games.filter(item => !newWishlist.includes(item))
-      }
+            case 3:
+              oldWishlist = _context3.sent;
+              _context3.next = 6;
+              return getWishlistFromServer();
 
-      console.log('恢复失败的游戏：', failedGames)
-      Swal.fire({
-        icon: 'success',
-        title: '愿望单恢复完成，恢复失败的游戏：',
-        html: JSON.stringify(failedGames).replace(/[\d]+/g, function (gameId) {
-          return `<a href=https://store.steampowered.com/app/${gameId} target="_blank">${gameId}</a>`
-        }),
-        confirmButtonText: '重新恢复失败的游戏',
-        showCancelButton: true,
-        cancelButtonText: '关闭'
-      }).then(({
-        value
-      }) => {
-        if (value) {
-          recoverWishlist(failedGames)
+            case 6:
+              newWishlist = _context3.sent;
+              games = oldWishlist.filter(function (item) {
+                return !newWishlist.includes(item);
+              });
+
+            case 8:
+              if (!games) {
+                _context3.next = 28;
+                break;
+              }
+
+              failedGames = [];
+              len = games.length;
+              i = 0;
+
+            case 12:
+              if (!(i < len)) {
+                _context3.next = 20;
+                break;
+              }
+
+              _context3.next = 15;
+              return addToWishlist(games[i], i, len);
+
+            case 15:
+              if (_context3.sent) {
+                _context3.next = 17;
+                break;
+              }
+
+              failedGames.push(games[i]);
+
+            case 17:
+              i++;
+              _context3.next = 12;
+              break;
+
+            case 20:
+              _context3.next = 22;
+              return getWishlistFromServer();
+
+            case 22:
+              _newWishlist = _context3.sent;
+
+              if (_newWishlist) {
+                failedGames = games.filter(function (item) {
+                  return !_newWishlist.includes(item);
+                });
+              }
+
+              console.log('恢复失败的游戏：', failedGames);
+              Swal.fire({
+                icon: 'success',
+                title: '愿望单恢复完成，恢复失败的游戏：',
+                html: JSON.stringify(failedGames).replace(/[\d]+/g, function (gameId) {
+                  return "<a href=https://store.steampowered.com/app/".concat(gameId, " target=\"_blank\">").concat(gameId, "</a>");
+                }),
+                confirmButtonText: '重新恢复失败的游戏',
+                showCancelButton: true,
+                cancelButtonText: '关闭'
+              }).then(function (_ref3) {
+                var value = _ref3.value;
+
+                if (value) {
+                  recoverWishlist(failedGames);
+                }
+              });
+              _context3.next = 29;
+              break;
+
+            case 28:
+              Swal.fire({
+                icon: 'error',
+                title: '没有读取到游戏列表'
+              });
+
+            case 29:
+            case "end":
+              return _context3.stop();
+          }
         }
-      })
-    } else {
-      Swal.fire({
-        icon: 'error',
-        title: '没有读取到游戏列表'
-      })
-    }
+      }, _callee3);
+    }));
+    return _recoverWishlist.apply(this, arguments);
   }
 
-  function addToWishlist (gameId, i, len) {
-    return new Promise(resolve => {
+  function addToWishlist(gameId, i, len) {
+    return new Promise(function (resolve) {
       Swal[i === 0 ? 'fire' : 'update']({
         title: '正在恢复愿望单游戏',
         text: gameId + ' (' + (i + 1) + '/' + len + ')'
-      })
+      });
       GM_xmlhttpRequest({
         url: 'https://store.steampowered.com/api/addtowishlist',
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
         },
-        data: `sessionid=${g_sessionID}&appid=${gameId}`,
+        data: "sessionid=".concat(g_sessionID, "&appid=").concat(gameId),
         responseType: 'json',
-        onload: response => {
-          console.log(response)
+        onload: function onload(response) {
+          var _response$response;
 
-          if (response.status === 200 && response.response?.success === true) {
-            resolve(true)
+          console.log(response);
+
+          if (response.status === 200 && ((_response$response = response.response) === null || _response$response === void 0 ? void 0 : _response$response.success) === true) {
+            resolve(true);
           } else {
-            resolve(false)
+            resolve(false);
           }
         },
-        ontimeout: () => {
-          resolve(false)
+        ontimeout: function ontimeout() {
+          resolve(false);
         },
-        onerror: () => {
-          resolve(false)
+        onerror: function onerror() {
+          resolve(false);
         },
-        onabort: () => {
-          resolve(false)
+        onabort: function onabort() {
+          resolve(false);
         }
-      })
-    })
+      });
+    });
   }
 
-  function createAndDownloadFile (fileName, content) {
-    const aTag = document.createElement('a')
-    const blob = new Blob([content])
-    aTag.download = fileName
-    aTag.href = URL.createObjectURL(blob)
-    aTag.click()
-    URL.revokeObjectURL(blob)
+  function createAndDownloadFile(fileName, content) {
+    var aTag = document.createElement('a');
+    var blob = new Blob([content]);
+    aTag.download = fileName;
+    aTag.href = URL.createObjectURL(blob);
+    aTag.click();
+    URL.revokeObjectURL(blob);
   }
 
-  function getWishlistFromServer () {
-    return new Promise(resolve => {
+  function getWishlistFromServer() {
+    return new Promise(function (resolve) {
       GM_xmlhttpRequest({
         method: 'GET',
         url: 'https://store.steampowered.com/dynamicstore/userdata/?id=' + g_AccountID + '&cc=CN&v=70',
         nocache: true,
         responseType: 'json',
-        onload: async response => {
-          console.log(response)
+        onload: function () {
+          var _onload = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(response) {
+            var _response$response2;
 
-          if (response.status === 200 && response?.response?.rgWishlist) {
-            resolve(response.response.rgWishlist)
-          } else {
-            Swal.fire({
-              icon: 'error',
-              title: '获取愿望单列表失败！'
-            })
-            resolve(false)
+            return regeneratorRuntime.wrap(function _callee$(_context) {
+              while (1) {
+                switch (_context.prev = _context.next) {
+                  case 0:
+                    console.log(response);
+
+                    if (response.status === 200 && response !== null && response !== void 0 && (_response$response2 = response.response) !== null && _response$response2 !== void 0 && _response$response2.rgWishlist) {
+                      resolve(response.response.rgWishlist);
+                    } else {
+                      Swal.fire({
+                        icon: 'error',
+                        title: '获取愿望单列表失败！'
+                      });
+                      resolve(false);
+                    }
+
+                  case 2:
+                  case "end":
+                    return _context.stop();
+                }
+              }
+            }, _callee);
+          }));
+
+          function onload(_x2) {
+            return _onload.apply(this, arguments);
           }
-        },
-        ontimeout: e => {
-          console.log(e)
+
+          return onload;
+        }(),
+        ontimeout: function ontimeout(e) {
+          console.log(e);
           Swal.fire({
             icon: 'error',
             title: '获取愿望单列表失败！'
-          })
-          resolve(false)
+          });
+          resolve(false);
         },
-        onerror: e => {
-          console.log(e)
+        onerror: function onerror(e) {
+          console.log(e);
           Swal.fire({
             icon: 'error',
             title: '获取愿望单列表失败！'
-          })
-          resolve(false)
+          });
+          resolve(false);
         },
-        onabort: e => {
-          console.log(e)
+        onabort: function onabort(e) {
+          console.log(e);
           Swal.fire({
             icon: 'error',
             title: '获取愿望单列表失败！'
-          })
-          resolve(false)
+          });
+          resolve(false);
         }
-      })
-    })
+      });
+    });
   }
 
-  async function getWishlistFromLocal () {
-    let games
-    const type = await Swal.fire({
-      confirmButtonText: '从缓存中读取',
-      showDenyButton: true,
-      denyButtonText: '从文件中读取'
-    }).then(result => {
-      if (result.isConfirmed) {
-        return 'cache'
-      } else if (result.isDenied) {
-        return 'file'
-      }
-    })
-
-    if (type === 'cache') {
-      Swal.fire({
-        title: '正在读取愿望单列表',
-        text: '请稍等...'
-      })
-      const list = GM_getValue('list')
-      const listId = list ? list[list.length - 1] : null
-      games = listId ? GM_getValue(listId) : null
-    } else if (type === 'file') {
-      const {
-        value: file
-      } = await Swal.fire({
-        title: '请选择要读取的文件',
-        input: 'file',
-        inputAttributes: {
-          accept: 'application/json',
-          'aria-label': '上传你的愿望单列表'
-        }
-      })
-
-      if (file) {
-        Swal.fire({
-          title: '正在读取愿望单列表',
-          text: '如果长时间没反应，请打开控制台查看报错'
-        })
-        games = await new Promise(resolve => {
-          const reader = new FileReader()
-
-          reader.onload = e => {
-            resolve(JSON.parse(e.target.result))
-          }
-
-          reader.onerror = e => {
-            resolve(false)
-          }
-
-          reader.readAsText(file)
-        })
-      }
-    }
-
-    return games
+  function getWishlistFromLocal() {
+    return _getWishlistFromLocal.apply(this, arguments);
   }
 
-  function setting () {
+  function _getWishlistFromLocal() {
+    _getWishlistFromLocal = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4() {
+      var games, type, list, listId, _yield$Swal$fire, file;
+
+      return regeneratorRuntime.wrap(function _callee4$(_context4) {
+        while (1) {
+          switch (_context4.prev = _context4.next) {
+            case 0:
+              _context4.next = 2;
+              return Swal.fire({
+                confirmButtonText: '从缓存中读取',
+                showDenyButton: true,
+                denyButtonText: '从文件中读取'
+              }).then(function (result) {
+                if (result.isConfirmed) {
+                  return 'cache';
+                } else if (result.isDenied) {
+                  return 'file';
+                }
+              });
+
+            case 2:
+              type = _context4.sent;
+
+              if (!(type === 'cache')) {
+                _context4.next = 10;
+                break;
+              }
+
+              Swal.fire({
+                title: '正在读取愿望单列表',
+                text: '请稍等...'
+              });
+              list = GM_getValue('list');
+              listId = list ? list[list.length - 1] : null;
+              games = listId ? GM_getValue(listId) : null;
+              _context4.next = 20;
+              break;
+
+            case 10:
+              if (!(type === 'file')) {
+                _context4.next = 20;
+                break;
+              }
+
+              _context4.next = 13;
+              return Swal.fire({
+                title: '请选择要读取的文件',
+                input: 'file',
+                inputAttributes: {
+                  accept: 'application/json',
+                  'aria-label': '上传你的愿望单列表'
+                }
+              });
+
+            case 13:
+              _yield$Swal$fire = _context4.sent;
+              file = _yield$Swal$fire.value;
+
+              if (!file) {
+                _context4.next = 20;
+                break;
+              }
+
+              Swal.fire({
+                title: '正在读取愿望单列表',
+                text: '如果长时间没反应，请打开控制台查看报错'
+              });
+              _context4.next = 19;
+              return new Promise(function (resolve) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                  resolve(JSON.parse(e.target.result));
+                };
+
+                reader.onerror = function (e) {
+                  resolve(false);
+                };
+
+                reader.readAsText(file);
+              });
+
+            case 19:
+              games = _context4.sent;
+
+            case 20:
+              return _context4.abrupt("return", games);
+
+            case 21:
+            case "end":
+              return _context4.stop();
+          }
+        }
+      }, _callee4);
+    }));
+    return _getWishlistFromLocal.apply(this, arguments);
+  }
+
+  function setting() {
     Swal.fire({
       title: '请输入要保留的游戏数量',
       input: 'text',
       inputLabel: '由于忽略了错误，实际保留的游戏数量可能比你设置的要多几个！',
       inputValue: GM_getValue('limit') || 0,
       showCancelButton: true,
-      inputValidator: value => {
+      inputValidator: function inputValidator(value) {
         if (!/^[\d]+$/.test(value)) {
-          return '请输入正确的数字！'
+          return '请输入正确的数字！';
         }
       }
-    }).then(({
-      value
-    }) => {
-      GM_setValue('limit', parseInt(value))
-      Swal.fire({
-        title: '保存成功',
-        icon: 'success'
-      })
-    })
+    }).then(function (_ref) {
+      var value = _ref.value;
+
+      if (/^[\d]+$/.test(value)) {
+        GM_setValue('limit', parseInt(value));
+        Swal.fire({
+          title: '保存成功',
+          icon: 'success'
+        });
+      } else if (value) {
+        Swal.fire({
+          title: '请输入正确的数字！',
+          icon: 'error'
+        });
+      }
+    });
   }
 
-  GM_registerMenuCommand('清空愿望单', clearWishlist)
-  GM_registerMenuCommand('恢复愿望单', recoverWishlist)
-  GM_registerMenuCommand('保留的游戏数量', setting)
-})()
+  GM_registerMenuCommand('清空愿望单', clearWishlist);
+  GM_registerMenuCommand('恢复愿望单', recoverWishlist);
+  GM_registerMenuCommand('保留的游戏数量', setting);
+})();
