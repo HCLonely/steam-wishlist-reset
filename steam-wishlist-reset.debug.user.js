@@ -7,7 +7,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 // ==UserScript==
 // @name               Steam愿望单重置
 // @namespace          steam-wishlist-reset
-// @version            1.0.5
+// @version            1.0.6
 // @description        清空Steam愿望单 & 恢复Steam愿望单
 // @author             HCLonely
 // @license            MIT
@@ -448,6 +448,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 var reader = new FileReader();
 
                 reader.onload = function (e) {
+                  console.log('%c%s', 'color:white;background:blue', '读取到的文件内容：' + e.target.result);
                   resolve(JSON.parse(e.target.result));
                 };
 
@@ -468,9 +469,10 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               console.log('%c%s', 'color:white;background:blue', '读取文件失败(1)');
 
             case 25:
+              console.log(games);
               return _context4.abrupt("return", games);
 
-            case 26:
+            case 27:
             case "end":
               return _context4.stop();
           }

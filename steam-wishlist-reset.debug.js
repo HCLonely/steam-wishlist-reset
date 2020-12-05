@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name               Steam愿望单重置
 // @namespace          steam-wishlist-reset
-// @version            1.0.5
+// @version            1.0.6
 // @description        清空Steam愿望单 & 恢复Steam愿望单
 // @author             HCLonely
 // @license            MIT
@@ -255,6 +255,7 @@
         games = await new Promise(resolve => {
           const reader = new FileReader()
           reader.onload = e => {
+            console.log('%c%s', 'color:white;background:blue', '读取到的文件内容：' + e.target.result)
             resolve(JSON.parse(e.target.result))
           }
           reader.onerror = e => {
@@ -267,6 +268,7 @@
         console.log('%c%s', 'color:white;background:blue', '读取文件失败(1)')
       }
     }
+    console.log(games)
     return games
   }
   function setting () {
