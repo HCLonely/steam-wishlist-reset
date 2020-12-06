@@ -182,6 +182,10 @@
         onload: async response => {
           console.log(response)
           if (response.status === 200 && response?.response?.rgWishlist) {
+            Swal.fire({
+              icon: 'success',
+              title: '获取愿望单列表失败成功'
+            })
             resolve(response.response.rgWishlist)
           } else {
             Swal.fire({

@@ -346,6 +346,10 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                     console.log(response);
 
                     if (response.status === 200 && response !== null && response !== void 0 && (_response$response2 = response.response) !== null && _response$response2 !== void 0 && _response$response2.rgWishlist) {
+                      Swal.fire({
+                        icon: 'success',
+                        title: '获取愿望单列表失败成功'
+                      });
                       resolve(response.response.rgWishlist);
                     } else {
                       Swal.fire({
