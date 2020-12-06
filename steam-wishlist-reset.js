@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name               Steam愿望单重置
 // @namespace          steam-wishlist-reset
-// @version            1.0.5
+// @version            1.0.6
 // @description        清空Steam愿望单 & 恢复Steam愿望单
 // @author             HCLonely
 // @license            MIT
@@ -32,10 +32,6 @@
   GM_addStyle('#swal2-title{color:#000!important;}#swal2-content a{color:#2f89bc!important;}')
   async function clearWishlist () {
     const limit = GM_getValue('limit') || 0
-    Swal.fire({
-      title: '正在获取愿望单列表',
-      text: '请耐心等待...'
-    })
     const wishlistGames = await getWishlistFromServer()
     wishlistGames.splice(0, limit)
     if (wishlistGames?.length > 0) {
@@ -160,6 +156,10 @@
       })
     })
   }
+  async function exportWishlist () {
+    const wishlists = await getWishlistFromServer()
+    createAndDownloadFile('wishlists.json', JSON.stringify(wishlists))
+  }
   function createAndDownloadFile (fileName, content) {
     const aTag = document.createElement('a')
     const blob = new Blob([content])
@@ -170,6 +170,10 @@
   }
   function getWishlistFromServer () {
     return new Promise(resolve => {
+      Swal.fire({
+        title: '正在获取愿望单列表',
+        text: '请耐心等待...'
+      })
       GM_xmlhttpRequest({
         method: 'GET',
         url: 'https://store.steampowered.com/dynamicstore/userdata/?id=' + g_AccountID + '&cc=CN&v=70',
@@ -293,5 +297,6 @@
   }
   GM_registerMenuCommand('清空愿望单', clearWishlist)
   GM_registerMenuCommand('恢复愿望单', recoverWishlist)
+  GM_registerMenuCommand('导出愿望单', exportWishlist)
   GM_registerMenuCommand('保留的游戏数量', setting)
 })()

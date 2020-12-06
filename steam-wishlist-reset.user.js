@@ -7,7 +7,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 // ==UserScript==
 // @name               Steam愿望单重置
 // @namespace          steam-wishlist-reset
-// @version            1.0.5
+// @version            1.0.6
 // @description        清空Steam愿望单 & 恢复Steam愿望单
 // @author             HCLonely
 // @license            MIT
@@ -45,19 +45,15 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           switch (_context2.prev = _context2.next) {
             case 0:
               limit = GM_getValue('limit') || 0;
-              Swal.fire({
-                title: '正在获取愿望单列表',
-                text: '请耐心等待...'
-              });
-              _context2.next = 4;
+              _context2.next = 3;
               return getWishlistFromServer();
 
-            case 4:
+            case 3:
               wishlistGames = _context2.sent;
               wishlistGames.splice(0, limit);
 
               if (!((wishlistGames === null || wishlistGames === void 0 ? void 0 : wishlistGames.length) > 0)) {
-                _context2.next = 23;
+                _context2.next = 22;
                 break;
               }
 
@@ -69,21 +65,21 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               len = wishlistGames.length;
               i = 0;
 
-            case 14:
+            case 13:
               if (!(i < len)) {
-                _context2.next = 20;
+                _context2.next = 19;
                 break;
               }
 
-              _context2.next = 17;
+              _context2.next = 16;
               return removeFromWishlist(wishlistGames[i], i, len);
 
-            case 17:
+            case 16:
               i++;
-              _context2.next = 14;
+              _context2.next = 13;
               break;
 
-            case 20:
+            case 19:
               Swal.fire({
                 icon: 'success',
                 title: '愿望单清空完成（忽略所有错误）',
@@ -97,16 +93,16 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                   createAndDownloadFile('wishlists.json', JSON.stringify(wishlistGames));
                 }
               });
-              _context2.next = 24;
+              _context2.next = 23;
               break;
 
-            case 23:
+            case 22:
               Swal.fire({
                 icon: 'warning',
                 title: '愿望单为空！'
               });
 
-            case 24:
+            case 23:
             case "end":
               return _context2.stop();
           }
@@ -291,6 +287,34 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     });
   }
 
+  function exportWishlist() {
+    return _exportWishlist.apply(this, arguments);
+  }
+
+  function _exportWishlist() {
+    _exportWishlist = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4() {
+      var wishlists;
+      return regeneratorRuntime.wrap(function _callee4$(_context4) {
+        while (1) {
+          switch (_context4.prev = _context4.next) {
+            case 0:
+              _context4.next = 2;
+              return getWishlistFromServer();
+
+            case 2:
+              wishlists = _context4.sent;
+              createAndDownloadFile('wishlists.json', JSON.stringify(wishlists));
+
+            case 4:
+            case "end":
+              return _context4.stop();
+          }
+        }
+      }, _callee4);
+    }));
+    return _exportWishlist.apply(this, arguments);
+  }
+
   function createAndDownloadFile(fileName, content) {
     var aTag = document.createElement('a');
     var blob = new Blob([content]);
@@ -302,6 +326,10 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
   function getWishlistFromServer() {
     return new Promise(function (resolve) {
+      Swal.fire({
+        title: '正在获取愿望单列表',
+        text: '请耐心等待...'
+      });
       GM_xmlhttpRequest({
         method: 'GET',
         url: 'https://store.steampowered.com/dynamicstore/userdata/?id=' + g_AccountID + '&cc=CN&v=70',
@@ -374,14 +402,14 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
   }
 
   function _getWishlistFromLocal() {
-    _getWishlistFromLocal = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4() {
+    _getWishlistFromLocal = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5() {
       var games, type, list, listId, _yield$Swal$fire, file;
 
-      return regeneratorRuntime.wrap(function _callee4$(_context4) {
+      return regeneratorRuntime.wrap(function _callee5$(_context5) {
         while (1) {
-          switch (_context4.prev = _context4.next) {
+          switch (_context5.prev = _context5.next) {
             case 0:
-              _context4.next = 2;
+              _context5.next = 2;
               return Swal.fire({
                 confirmButtonText: '从缓存中读取',
                 showDenyButton: true,
@@ -395,10 +423,10 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               });
 
             case 2:
-              type = _context4.sent;
+              type = _context5.sent;
 
               if (!(type === 'cache')) {
-                _context4.next = 10;
+                _context5.next = 10;
                 break;
               }
 
@@ -409,16 +437,16 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               list = GM_getValue('list');
               listId = list ? list[list.length - 1] : null;
               games = listId ? GM_getValue(listId) : null;
-              _context4.next = 20;
+              _context5.next = 20;
               break;
 
             case 10:
               if (!(type === 'file')) {
-                _context4.next = 20;
+                _context5.next = 20;
                 break;
               }
 
-              _context4.next = 13;
+              _context5.next = 13;
               return Swal.fire({
                 title: '请选择要读取的文件',
                 input: 'file',
@@ -429,11 +457,11 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               });
 
             case 13:
-              _yield$Swal$fire = _context4.sent;
+              _yield$Swal$fire = _context5.sent;
               file = _yield$Swal$fire.value;
 
               if (!file) {
-                _context4.next = 20;
+                _context5.next = 20;
                 break;
               }
 
@@ -441,7 +469,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 title: '正在读取愿望单列表',
                 text: '如果长时间没反应，请打开控制台查看报错'
               });
-              _context4.next = 19;
+              _context5.next = 19;
               return new Promise(function (resolve) {
                 var reader = new FileReader();
 
@@ -457,17 +485,17 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               });
 
             case 19:
-              games = _context4.sent;
+              games = _context5.sent;
 
             case 20:
-              return _context4.abrupt("return", games);
+              return _context5.abrupt("return", games);
 
             case 21:
             case "end":
-              return _context4.stop();
+              return _context5.stop();
           }
         }
-      }, _callee4);
+      }, _callee5);
     }));
     return _getWishlistFromLocal.apply(this, arguments);
   }
@@ -504,5 +532,6 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
   GM_registerMenuCommand('清空愿望单', clearWishlist);
   GM_registerMenuCommand('恢复愿望单', recoverWishlist);
+  GM_registerMenuCommand('导出愿望单', exportWishlist);
   GM_registerMenuCommand('保留的游戏数量', setting);
 })();
