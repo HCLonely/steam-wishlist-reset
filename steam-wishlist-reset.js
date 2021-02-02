@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name               Steam愿望单重置
 // @namespace          steam-wishlist-reset
-// @version            1.0.6
+// @version            1.0.7
 // @description        清空Steam愿望单 & 恢复Steam愿望单
 // @author             HCLonely
 // @license            MIT
@@ -12,6 +12,7 @@
 // @downloadURL        https://github.com/HCLonely/steam-wishlist-reset/raw/master/steam-wishlist-reset.user.js
 
 // @include            *://store.steampowered.com/wishlist/profiles/*
+// @include            *://store.steampowered.com/wishlist/id/*
 
 // @require            https://cdn.jsdelivr.net/npm/sweetalert2@10.10.2/dist/sweetalert2.all.min.js
 // @require            https://cdn.jsdelivr.net/npm/regenerator-runtime@0.13.5/runtime.min.js
