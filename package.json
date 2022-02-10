@@ -7,8 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "babel": "./node_modules/.bin/babel steam-wishlist-reset.js -o steam-wishlist-reset.user.js",
     "standard": "standard --fix",
-    "build": "./node_modules/.bin/babel steam-wishlist-reset.js -o steam-wishlist-reset.user.js && standard --fix",
-    "dev": "./node_modules/.bin/babel steam-wishlist-reset.debug.js -o steam-wishlist-reset.debug.user.js && standard --fix"
+    "build": "babel steam-wishlist-reset.js -o steam-wishlist-reset.user.js && standard --fix"
   },
   "author": "HCLonely",
   "license": "MIT",
@@ -19,11 +18,15 @@
     "@babel/preset-env": "^7.12.7",
     "standard": "^16.0.3"
   },
-  "standard":{
-    "global":[
-      "GM_setValue","GM_getValue","GM_addStyle","GM_xmlhttpRequest","GM_registerMenuCommand"
+  "standard": {
+    "global": [
+      "GM_setValue",
+      "GM_getValue",
+      "GM_addStyle",
+      "GM_xmlhttpRequest",
+      "GM_registerMenuCommand"
     ],
-    "ignore":[
+    "ignore": [
       "steam-wishlist-reset.user.js",
       "steam-wishlist-reset.debug.user.js"
     ]

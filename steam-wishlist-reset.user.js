@@ -7,7 +7,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 // ==UserScript==
 // @name               Steam愿望单重置
 // @namespace          steam-wishlist-reset
-// @version            1.0.6
+// @version            1.0.8
 // @description        清空Steam愿望单 & 恢复Steam愿望单
 // @author             HCLonely
 // @license            MIT
@@ -17,6 +17,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 // @updateURL          https://github.com/HCLonely/steam-wishlist-reset/raw/master/steam-wishlist-reset.user.js
 // @downloadURL        https://github.com/HCLonely/steam-wishlist-reset/raw/master/steam-wishlist-reset.user.js
 // @include            *://store.steampowered.com/wishlist/profiles/*
+// @include            *://store.steampowered.com/wishlist/id/*
 // @require            https://cdn.jsdelivr.net/npm/sweetalert2@10.10.2/dist/sweetalert2.all.min.js
 // @require            https://cdn.jsdelivr.net/npm/regenerator-runtime@0.13.5/runtime.min.js
 // @grant              GM_setValue
@@ -150,7 +151,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           switch (_context3.prev = _context3.next) {
             case 0:
               if (games) {
-                _context3.next = 8;
+                _context3.next = 10;
                 break;
               }
 
@@ -159,18 +160,27 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
             case 3:
               oldWishlist = _context3.sent;
-              _context3.next = 6;
-              return getWishlistFromServer();
+
+              if (!(oldWishlist === 'cancel')) {
+                _context3.next = 6;
+                break;
+              }
+
+              return _context3.abrupt("return");
 
             case 6:
-              newWishlist = _context3.sent;
-              games = oldWishlist.filter(function (item) {
-                return !newWishlist.includes(item);
-              });
+              _context3.next = 8;
+              return getWishlistFromServer();
 
             case 8:
+              newWishlist = _context3.sent;
+              games = oldWishlist === null || oldWishlist === void 0 ? void 0 : oldWishlist.filter(function (item) {
+                return !(newWishlist !== null && newWishlist !== void 0 && newWishlist.includes(item));
+              });
+
+            case 10:
               if (!games) {
-                _context3.next = 28;
+                _context3.next = 30;
                 break;
               }
 
@@ -178,33 +188,33 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               len = games.length;
               i = 0;
 
-            case 12:
+            case 14:
               if (!(i < len)) {
-                _context3.next = 20;
+                _context3.next = 22;
                 break;
               }
 
-              _context3.next = 15;
+              _context3.next = 17;
               return addToWishlist(games[i], i, len);
 
-            case 15:
+            case 17:
               if (_context3.sent) {
-                _context3.next = 17;
+                _context3.next = 19;
                 break;
               }
 
               failedGames.push(games[i]);
 
-            case 17:
+            case 19:
               i++;
-              _context3.next = 12;
+              _context3.next = 14;
               break;
 
-            case 20:
-              _context3.next = 22;
+            case 22:
+              _context3.next = 24;
               return getWishlistFromServer();
 
-            case 22:
+            case 24:
               _newWishlist = _context3.sent;
 
               if (_newWishlist) {
@@ -216,10 +226,11 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               console.log('恢复失败的游戏：', failedGames);
               Swal.fire({
                 icon: 'success',
-                title: '愿望单恢复完成，恢复失败的游戏：',
-                html: JSON.stringify(failedGames).replace(/[\d]+/g, function (gameId) {
+                title: failedGames.length > 0 ? '愿望单恢复完成，恢复失败的游戏：' : '所有愿望单游戏恢复完成！',
+                html: failedGames.length > 0 ? JSON.stringify(failedGames).replace(/[\d]+/g, function (gameId) {
                   return "<a href=https://store.steampowered.com/app/".concat(gameId, " target=\"_blank\">").concat(gameId, "</a>");
-                }),
+                }) : '',
+                showConfirmButton: failedGames.length > 0,
                 confirmButtonText: '重新恢复失败的游戏',
                 showCancelButton: true,
                 cancelButtonText: '关闭'
@@ -230,16 +241,16 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                   recoverWishlist(failedGames);
                 }
               });
-              _context3.next = 29;
+              _context3.next = 31;
               break;
 
-            case 28:
+            case 30:
               Swal.fire({
                 icon: 'error',
                 title: '没有读取到游戏列表'
               });
 
-            case 29:
+            case 31:
             case "end":
               return _context3.stop();
           }
@@ -343,12 +354,10 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               while (1) {
                 switch (_context.prev = _context.next) {
                   case 0:
-                    console.log(response);
-
                     if (response.status === 200 && response !== null && response !== void 0 && (_response$response2 = response.response) !== null && _response$response2 !== void 0 && _response$response2.rgWishlist) {
                       Swal.fire({
                         icon: 'success',
-                        title: '获取愿望单列表失败成功'
+                        title: '获取愿望单列表成功！'
                       });
                       resolve(response.response.rgWishlist);
                     } else {
@@ -359,7 +368,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                       resolve(false);
                     }
 
-                  case 2:
+                  case 1:
                   case "end":
                     return _context.stop();
                 }
@@ -421,9 +430,13 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               }).then(function (result) {
                 if (result.isConfirmed) {
                   return 'cache';
-                } else if (result.isDenied) {
+                }
+
+                if (result.isDenied) {
                   return 'file';
                 }
+
+                return false;
               });
 
             case 2:
@@ -441,12 +454,12 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               list = GM_getValue('list');
               listId = list ? list[list.length - 1] : null;
               games = listId ? GM_getValue(listId) : null;
-              _context5.next = 20;
+              _context5.next = 23;
               break;
 
             case 10:
               if (!(type === 'file')) {
-                _context5.next = 20;
+                _context5.next = 22;
                 break;
               }
 
@@ -492,9 +505,16 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               games = _context5.sent;
 
             case 20:
+              _context5.next = 23;
+              break;
+
+            case 22:
+              games = 'cancel';
+
+            case 23:
               return _context5.abrupt("return", games);
 
-            case 21:
+            case 24:
             case "end":
               return _context5.stop();
           }
@@ -535,7 +555,9 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
   }
 
   GM_registerMenuCommand('清空愿望单', clearWishlist);
-  GM_registerMenuCommand('恢复愿望单', recoverWishlist);
+  GM_registerMenuCommand('恢复愿望单', function () {
+    recoverWishlist();
+  });
   GM_registerMenuCommand('导出愿望单', exportWishlist);
   GM_registerMenuCommand('保留的游戏数量', setting);
 })();

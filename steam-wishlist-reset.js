@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name               Steam愿望单重置
 // @namespace          steam-wishlist-reset
-// @version            1.0.7
+// @version            1.0.8
 // @description        清空Steam愿望单 & 恢复Steam愿望单
 // @author             HCLonely
 // @license            MIT
@@ -90,8 +90,9 @@
   async function recoverWishlist (games) {
     if (!games) {
       const oldWishlist = await getWishlistFromLocal()
+      if (oldWishlist === 'cancel') return
       const newWishlist = await getWishlistFromServer()
-      games = oldWishlist.filter(item => !newWishlist.includes(item))
+      games = oldWishlist?.filter(item => !newWishlist?.includes(item))
     }
     if (games) {
       let failedGames = []
@@ -106,10 +107,13 @@
       console.log('恢复失败的游戏：', failedGames)
       Swal.fire({
         icon: 'success',
-        title: '愿望单恢复完成，恢复失败的游戏：',
-        html: JSON.stringify(failedGames).replace(/[\d]+/g, function (gameId) {
-          return `<a href=https://store.steampowered.com/app/${gameId} target="_blank">${gameId}</a>`
-        }),
+        title: failedGames.length > 0 ? '愿望单恢复完成，恢复失败的游戏：' : '所有愿望单游戏恢复完成！',
+        html: failedGames.length > 0
+          ? JSON.stringify(failedGames).replace(/[\d]+/g, function (gameId) {
+              return `<a href=https://store.steampowered.com/app/${gameId} target="_blank">${gameId}</a>`
+            })
+          : '',
+        showConfirmButton: failedGames.length > 0,
         confirmButtonText: '重新恢复失败的游戏',
         showCancelButton: true,
         cancelButtonText: '关闭'
@@ -181,11 +185,10 @@
         nocache: true,
         responseType: 'json',
         onload: async response => {
-          console.log(response)
           if (response.status === 200 && response?.response?.rgWishlist) {
             Swal.fire({
               icon: 'success',
-              title: '获取愿望单列表失败成功'
+              title: '获取愿望单列表成功！'
             })
             resolve(response.response.rgWishlist)
           } else {
@@ -232,9 +235,11 @@
     }).then(result => {
       if (result.isConfirmed) {
         return 'cache'
-      } else if (result.isDenied) {
+      }
+      if (result.isDenied) {
         return 'file'
       }
+      return false
     })
     if (type === 'cache') {
       Swal.fire({
@@ -270,6 +275,8 @@
           reader.readAsText(file)
         })
       }
+    } else {
+      games = 'cancel'
     }
     return games
   }
@@ -301,7 +308,7 @@
     })
   }
   GM_registerMenuCommand('清空愿望单', clearWishlist)
-  GM_registerMenuCommand('恢复愿望单', recoverWishlist)
+  GM_registerMenuCommand('恢复愿望单', () => { recoverWishlist() })
   GM_registerMenuCommand('导出愿望单', exportWishlist)
   GM_registerMenuCommand('保留的游戏数量', setting)
 })()
